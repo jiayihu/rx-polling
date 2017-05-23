@@ -1,0 +1,9 @@
+pre[class*="language-"] {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+code[class*="language-"] {
+  line-height: 1;
+}
+

@@ -1,0 +1,52 @@
+{
+  "name": "rx-polling",
+  "version": "0.1.0",
+  "description": "Polling library done with RxJS",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc && tsc --declaration false --module UMD --outDir ./lib/umd",
+    "clean": "rimraf lib",
+    "lint": "tslint \"./index.ts\"",
+    "test": "jest",
+    "prepublish": "npm run clean && npm run build",
+    "prepush": "npm run lint && npm test"
+  },
+  "repository": "https://github.com/jiayihu/rx-polling",
+  "keywords": [
+    "rxjs",
+    "polling",
+    "long-polling",
+    "network"
+  ],
+  "author": "Jiayi Hu <jiayi.ghu@gmail.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^19.2.2",
+    "husky": "^0.13.3",
+    "jest": "^19.0.2",
+    "rimraf": "^2.6.1",
+    "rxjs": "^5.4.0",
+    "ts-jest": "^19.0.8",
+    "tslint": "^5.0.0",
+    "typescript": "^2.3.2"
+  },
+  "peerDependencies": {
+    "rxjs": "^5.0.0"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(test/.*\\.spec\\.(ts|js))$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && webpack",
+    "clean": "rimraf dist",
+    "deploy": "npm run build && gh-pages -d dist",
+    "start": "webpack-dev-server --inline"
+  },
+  "author": "Jiayi Hu <jiayi.ghu@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "copy-webpack-plugin": "^4.0.1",
+    "cross-env": "^4.0.0",
+    "gh-pages": "^0.12.0",
+    "rimraf": "^2.6.1",
+    "ts-loader": "^2.0.3",
+    "webpack": "^2.3.3",
+    "webpack-dev-server": "^2.4.2"
+  },
+  "dependencies": {
+    "rxjs": "^5.4.0"
+  }
+}
