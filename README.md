@@ -1,140 +1,100 @@
-# Sinergia
+# rx-polling
 
-[![npm](https://img.shields.io/npm/v/sinergia.svg)](https://www.npmjs.com/package/sinergia) [![travis](https://travis-ci.org/jiayihu/sinergia.svg?branch=master)](https://travis-ci.org/jiayihu/sinergia)
+[![npm](https://img.shields.io/npm/v/rx-polling.svg)](https://www.npmjs.com/package/rx-polling) [![travis](https://travis-ci.org/jiayihu/rx-polling.svg?branch=master)](https://travis-ci.org/jiayihu/rx-polling)
 
-**sinergia** is a tiny (1KB gzipped) library to run [cooperative](https://en.wikipedia.org/wiki/Cooperative_multitasking) expensive tasks  without blocking the UI during the computations and keeping 60fps frame rate.
+**rx-polling** is a tiny (1KB gzipped) library to run polling requests on intervals, with support for:
 
-## Demo
-
-A live example is available at [https://jiayihu.github.io/sinergia/](https://jiayihu.github.io/sinergia/), with an animated box which should remain smooth at 60fps.
-
-There are 2 examples:
-
-1. [Long running loop](https://jiayihu.github.io/sinergia/#loop): Running an expensive function (with a 2mln iterations loop) with each item of an iterable
-
-2. [Long merge sort](https://jiayihu.github.io/sinergia/#merge-sort): Running a common merge sort with an array of 100k items
-
-It's possible to play with the demo locally cloning the repo and running:
-
-```bash
-cd demo # Go to demo folder
-npm install # Or `yarn install`
-npm start
-```
+- pause and resume if the browser tab is inactive/active
+- N retry attempts before throwing
+- Esponential backoff between attempts. It will wait 2, 4, ... 64, 256 seconds between attemps.
 
 ## Installation
 
 ```
-npm install sinergia --save
+npm install rx-polling --save
 ```
 
 ## Usage
 
-> The following examples use [co](https://github.com/tj/co) to consume the generator functions.  
-
-In this example `work` runs a long loop for every item, but every 100000 iterations it interrupts and gives the control to `sinergia`, which will resume the execution of `work` when more suitable.  
-
-Execution tasks are by definition [cooperative](https://en.wikipedia.org/wiki/Cooperative_multitasking) because they decide when to `yield` the control of the execution.
-
-By using `yield` inside your `work` you can decide the priority of the execution. *Yielding* often will run the task smoothly chunk by chunk but it will complete in more time. On the other hand *yielding* fewer times it will complete the task sooner but it will block more the main thread. *Yielding* zero times is equal to running the task *synchronously*.
+Fetch data from the endpoint every 5 seconds.
 
 ```javascript
-import co from 'co';
-import { sinergia } from 'sinergia';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/dom/ajax';
+import 'rxjs/add/operator/map';
 
-function* work() {
-  const iterable = 'Absent gods.'.split('');
-  let result = '';
+import polling from 'rx-polling';
 
-  for (let item of iterable) {
-    let x = 0;
+const request$ = Observable.ajax({
+    url: 'https://jsonplaceholder.typicode.com/comments/',
+    crossDomain: true
+  }).map(response => response.response || [])
+  .map(response => response.slice(0, 10)); // Take only first 10 comments
 
-    while (x < 2000000) {
-      x = x + 1;
-
-      // Tell sinergia when the task can be interrupted and resumed later
-      if (x % 100000 === 0) yield result;
-    }
-
-    result += item; // Simple result of task
-    console.log(`Result of iteration:`, result);
-  }
-
-  yield result; // Yield latest result
-}
-
-const execute = co(function* () {
-  return yield* sinergia(work);
-});
-execute.then((result) => {
-  // If the work wasn't interrupted
-  if (result) console.log(`Result: ${result.value}`);
+polling(request$, { interval: 5000 }).subscribe((comments) => {
+  console.log(comments);
 });
 ```
 
-### Abort execution
+### Stop polling
 
-Since `sinergia` is just a generator, you can use the returned object to abort the execution using [.return()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator/return) method of generators.
-
-The method will return `{ value: any }` with the value of the result computed on the latest item before aborting.
+Since `rx-polling` returns an Observable, you can just `.unsubscribe` from it to close the polling.
 
 ```javascript
-import co from 'co';
-import { sinergia } from 'sinergia';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/dom/ajax';
+import 'rxjs/add/operator/map';
 
-function* work() {
-  const iterable = 'Absent gods.'.split('');
-  let result = '';
+import polling from 'rx-polling';
 
-  for (let item of iterable) {
-    let x = 0;
+const request$ = Observable.ajax({
+    url: 'https://jsonplaceholder.typicode.com/comments/',
+    crossDomain: true
+  }).map(response => response.response || [])
+  .map(response => response.slice(0, 10)); // Take only first 10 comments
 
-    while (x < 2000000) {
-      x = x + 1;
-
-      // Tell sinergia when the task can be interrupted and resumed later
-      if (x % 100000 === 0) yield result;
-    }
-
-    result += item; // Simple result of task
-    console.log(`Result of iteration:`, result);
-  }
-
-  yield result; // Yield latest result
-}
-
-let iterator;
-
-const execute = co(function* () {
-  iterator = sinergia(work);
-  return yield* iterator;
-});
-execute.then((result) => {
-  // If the work wasn't interrupted
-  if (result) console.log(`Result: ${result.value}`);
+let subscription = polling(request$, { interval: 5000 }).subscribe((comments) => {
+  console.log(comments);
 });
 
 window.setTimeout(() => {
-  const result = iterator.return();
-  console.log('Interrupted result', result.value);
+  subscription.unsubscribe();
 }, 5000);
 ```
 
 ## API
 
-#### sinergia(work: GeneratorFunction): Generator
+#### polling(request$, options): Observable
 
-It runs asynchronously the `work` function in not blocking way.
-Returns the [Generator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) object.
+```javascript
+import polling from 'rx-polling';
+
+...
+
+// Any Observable is okay, even if it does not make network requests
+const request$ = this.http.get('someResource');
+
+polling(request$, {
+    // Period of the polling
+    interval: 5000,
+
+    // How many times to attempt recover, requesting the data again.
+    // Each attempt is delayed of an increasing esponential time.
+    // The delays are 2, 4, 8, 16, 32, 64, 128 seconds (7 attempts) 
+    // in this case.
+    attempts: 7
+  })
+  .subscribe((data) => {
+    console.log(data);
+  });
+```
+
+Returns an `Observable` which:
+
+- *emits* whenever new data is fetched using `request$`
+- *errors* if `request$` throws AND if after N attempts it still fails. If any of the attempts succeeds then the polling is recovered and no error is thrown
+- *completes* Never. Be sure to `.unsubscribe()` the Observable when you're not anymore interested in the polling.
 
 ## Browser support
 
-**sinergia** requires polyfills for:
-
-1. *Promise* like [es6-promise](https://github.com/stefanpenner/es6-promise) or [core-js Promise](https://github.com/zloirock/core-js#ecmascript-6-promise). If you use [babel-polyfill](https://babeljs.io/docs/usage/polyfill/) it's already included.
-
-2. *requestAnimationFrame/cancelAnimationFrame*. See this [gist](https://gist.github.com/paulirish/1579671) as example.
-
-## Credits
-
-Ispiration comes largely from [@LucaColonnello](https://github.com/LucaColonnello) and [@cef62](https://github.com/cef62).
+**rx-polling** supports IE10+, it internally uses [document.hidden](https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden).

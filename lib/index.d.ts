@@ -9,12 +9,12 @@ import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/switchMap';
 export interface IOptions {
     interval: number;
-    retryTimes?: number;
+    attempts?: number;
 }
 /**
  * Run a polling stream for the source$
  * @param source$ Observable to fetch the data
  * @param interval Period of the polling
- * @param retryTimes Number of times to retry. The last retry attempt will wait for 2^retryTimes seconds.
+ * @param attempts Number of times to retry. The last retry attempt will wait for 2^attempts seconds.
  */
-export default function polling<T>(source$: Observable<T>, userOptions?: IOptions): Observable<T>;
+export default function polling<T>(request$: Observable<T>, userOptions?: IOptions): Observable<T>;
