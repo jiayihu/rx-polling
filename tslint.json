@@ -17,5 +17,5 @@
     "quotemark": [true, "single"],
     "trailing-comma": [true, { "multiline": "always", "singleline": "never" }],
     "variable-name": [true, "check-format", "allow-leading-underscore"]
-    }
+  }
 }

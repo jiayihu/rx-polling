@@ -21,8 +21,8 @@ acorn-globals@^3.1.0:
     acorn "^4.0.4"
 
 acorn@^4.0.4:
-  version "4.0.11"
-  resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.11.tgz#edcda3bd937e7556410d42ed5860f67399c794c0"
+  version "4.0.13"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.13.tgz#105495ae5361d697bd195c825192e1ad7f253787"
 
 ajv@^4.9.1:
   version "4.11.8"
@@ -2315,8 +2315,8 @@ tslint@^5.0.0:
     tsutils "^2.0.0"
 
 tsutils@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.1.0.tgz#5be8376c929528f65b302de9e17b0004e4c1eb20"
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.2.0.tgz#218614657f21c677e4536b4ba75daf8ebce1b367"
 
 tunnel-agent@^0.6.0:
   version "0.6.0"

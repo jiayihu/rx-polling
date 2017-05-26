@@ -1,14 +1,21 @@
 import { Observable } from 'rxjs/Observable';
 import { Observer } from 'rxjs/Observer';
+import { Scheduler } from 'rxjs/Scheduler';
+
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/observable/interval';
 import 'rxjs/add/observable/timer';
 
+import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/retryWhen';
 import 'rxjs/add/operator/scan';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/switchMap';
+
+function isPageActive(): boolean {
+  return !Boolean(document.hidden);
+}
 
 export interface IOptions {
   interval: number;
@@ -25,14 +32,18 @@ const defaultOptions = {
  * @param interval Period of the polling
  * @param attempts Number of times to retry. The last retry attempt will wait for 2^attempts seconds.
  */
-export default function polling<T>(request$: Observable<T>, userOptions: IOptions = {} as any): Observable<T> {
+export default function polling<T>(
+  request$: Observable<T>,
+  userOptions: IOptions,
+  scheduler?: Scheduler,
+): Observable<T> {
   const options = Object.assign({}, defaultOptions, userOptions);
 
   return Observable.fromEvent(document, 'visibilitychange')
-    .startWith(!Boolean(document.hidden))
-    .switchMap(isPageActive => {
-      if (isPageActive) {
-        return Observable.interval(options.interval)
+    .startWith(null)
+    .switchMap(() => {
+      if (isPageActive()) {
+        return Observable.interval(options.interval, scheduler)
           .startWith(null) // Immediately run the first call
           .switchMap(() => request$)
           .retryWhen(errors => {
