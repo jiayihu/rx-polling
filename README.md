@@ -12,6 +12,10 @@
   3. *consecutive*: it will wait a constant time amount between attempts.
 - Observables: it accepts any Observable as input and **it returns an Observable**, which means it can be combined with other Observables as any other RxJS stream.
 
+## Demo
+
+A demo of the library is available at [jiayihu.github.io/rx-polling/demo](https://jiayihu.github.io/rx-polling/demo/).
+
 ## Installation
 
 ```

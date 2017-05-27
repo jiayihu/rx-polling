@@ -11,11 +11,6 @@
   </head>
   <body>
     <div class="container pt-sm-5">
-      <div class="text-center">
-        <button class="start btn btn-primary">Start polling - see console</button>
-        <button class="interrupt btn btn-danger">Stop polling</button>
-      </div>
-
       <pre>
         <code class="language-javascript">
 
@@ -31,6 +26,36 @@ let subscription = polling(request$, { interval: 1000 }).subscribe((comments) =>
 
         </code>
       </pre>
+
+      <div class="text-center mt-5">
+        <p>Select a backoff strategy</p>
+        <div class="form-check form-check-inline">
+          <label class="form-check-label">
+            <input class="form-check-input" checked type="radio" name="strategy" value="esponential"> Esponential
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <label class="form-check-label">
+            <input class="form-check-input" type="radio" name="strategy" value="random"> Random
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <label class="form-check-label">
+            <input class="form-check-input" type="radio" name="strategy" value="consecutive"> Consecutive
+          </label>
+        </div>
+
+        <p>
+          <button class="start btn btn-lg">Start polling - see console</button>
+        <button class="interrupt btn btn-danger btn-lg">Stop polling</button>
+        </p>
+
+        <p>To see failure handling try disabling network and check requests on <strong>Chrome Devtools => Network panel</strong></p>
+
+        <p class="mt-5">
+          <a href="https://github.com/jiayihu/rx-polling">View on Github</a>
+        </p>
+      </div>
 
     <script src="dist/main.js" charset="utf-8"></script>
     <script src="assets/prism.js"></script>

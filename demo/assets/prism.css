@@ -1,139 +1,168 @@
-/* http://prismjs.com/download.html?themes=prism&languages=markup+css+clike+javascript */
-/**
- * prism.js default theme for JavaScript, CSS and HTML
- * Based on dabblet (http://dabblet.com)
- * @author Lea Verou
- */
+/*
+Name:   Duotone Earth
+Author: Simurai, adapted from DuoTone themes for Atom (http://simurai.com/projects/2016/01/01/duotone-themes)
+
+Conversion: Bram de Haan (http://atelierbram.github.io/Base2Tone-prism/output/prism/prism-base2tone-earth-dark.css)
+Generated with Base16 Builder (https://github.com/base16-builder/base16-builder)
+*/
 
 code[class*="language-"],
 pre[class*="language-"] {
-	color: black;
-	background: none;
-	text-shadow: 0 1px white;
-	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-	text-align: left;
-	white-space: pre;
-	word-spacing: normal;
-	word-break: normal;
-	word-wrap: normal;
-	line-height: 1.5;
+  font-family: Consolas, Menlo, Monaco, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 1.375;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
 
-	-moz-tab-size: 4;
-	-o-tab-size: 4;
-	tab-size: 4;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
 
-	-webkit-hyphens: none;
-	-moz-hyphens: none;
-	-ms-hyphens: none;
-	hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  background: #322d29;
+  color: #88786d;
 }
 
 pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
 code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
-	text-shadow: none;
-	background: #b3d4fc;
+  text-shadow: none;
+  background: #6f5849;
 }
 
 pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
 code[class*="language-"]::selection, code[class*="language-"] ::selection {
-	text-shadow: none;
-	background: #b3d4fc;
-}
-
-@media print {
-	code[class*="language-"],
-	pre[class*="language-"] {
-		text-shadow: none;
-	}
+  text-shadow: none;
+  background: #6f5849;
 }
 
 /* Code blocks */
 pre[class*="language-"] {
-	padding: 1em;
-	margin: .5em 0;
-	overflow: auto;
-}
-
-:not(pre) > code[class*="language-"],
-pre[class*="language-"] {
-	background: #f5f2f0;
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
 }
 
 /* Inline code */
 :not(pre) > code[class*="language-"] {
-	padding: .1em;
-	border-radius: .3em;
-	white-space: normal;
+  padding: .1em;
+  border-radius: .3em;
 }
 
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-	color: slategray;
+  color: #6a5f58;
 }
 
 .token.punctuation {
-	color: #999;
+  color: #6a5f58;
 }
 
-.namespace {
-	opacity: .7;
+.token.namespace {
+  opacity: .7;
+}
+
+.token.tag,
+.token.operator,
+.token.number {
+  color: #bfa05a;
 }
 
 .token.property,
-.token.tag,
-.token.boolean,
-.token.number,
-.token.constant,
-.token.symbol,
-.token.deleted {
-	color: #905;
+.token.function {
+  color: #88786d;
 }
 
+.token.tag-id,
 .token.selector,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin,
-.token.inserted {
-	color: #690;
+.token.atrule-id {
+  color: #fff3eb;
 }
 
-.token.operator,
+code.language-javascript,
+.token.attr-name {
+  color: #a48774;
+}
+
+code.language-css,
+code.language-scss,
+.token.boolean,
+.token.string,
 .token.entity,
 .token.url,
 .language-css .token.string,
-.style .token.string {
-	color: #a67f59;
-	background: hsla(0, 0%, 100%, .5);
-}
-
-.token.atrule,
+.language-scss .token.string,
+.style .token.string,
 .token.attr-value,
-.token.keyword {
-	color: #07a;
-}
-
-.token.function {
-	color: #DD4A68;
-}
-
+.token.keyword,
+.token.control,
+.token.directive,
+.token.unit,
+.token.statement,
 .token.regex,
-.token.important,
+.token.atrule {
+  color: #fcc440;
+}
+
+.token.placeholder,
 .token.variable {
-	color: #e90;
+  color: #fcc440;
+}
+
+.token.deleted {
+  text-decoration: line-through;
+}
+
+.token.inserted {
+  border-bottom: 1px dotted #fff3eb;
+  text-decoration: none;
+}
+
+.token.italic {
+  font-style: italic;
 }
 
 .token.important,
 .token.bold {
-	font-weight: bold;
+  font-weight: bold;
 }
-.token.italic {
-	font-style: italic;
+
+.token.important {
+  color: #a48774;
 }
 
 .token.entity {
-	cursor: help;
+  cursor: help;
 }
 
+pre > code.highlight {
+  outline: .4em solid #816d5f;
+  outline-offset: .4em;
+}
+
+/* overrides color-values for the Line Numbers plugin
+ * http://prismjs.com/plugins/line-numbers/
+ */
+.line-numbers .line-numbers-rows {
+  border-right-color: #35302b;
+}
+
+.line-numbers-rows > span:before {
+  color: #46403d;
+}
+
+/* overrides color-values for the Line Highlight plugin
+* http://prismjs.com/plugins/line-highlight/
+*/
+.line-highlight {
+  background: rgba(191, 160, 90, 0.2);
+  background: -webkit-linear-gradient(left, rgba(191, 160, 90, 0.2) 70%, rgba(191, 160, 90, 0));
+  background: linear-gradient(to right, rgba(191, 160, 90, 0.2) 70%, rgba(191, 160, 90, 0));
+}

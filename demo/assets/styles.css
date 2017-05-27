@@ -1,3 +1,12 @@
+body {
+  min-height: 100vh;
+  background: #FDD13B;
+}
+
+a {
+  color: #454545;
+}
+
 pre[class*="language-"] {
   font-size: 13px;
   line-height: 1.5;
@@ -7,3 +16,8 @@ code[class*="language-"] {
   line-height: 1;
 }
 
+.start {
+  background: #FEAE00;
+  border: #ffaf00;
+  color: #fff;
+}
