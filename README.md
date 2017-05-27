@@ -174,6 +174,7 @@ const defaultOptions: IOptions = {
 
 **rx-polling** supports IE10+, it internally uses [document.hidden](https://developer.mozilla.org/en-US/docs/Web/API/Document/hidden) and 
 [visibilitychange](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) Event.
+You might need to polyfill them on older browsers.
 
 ## Contributing
 
@@ -183,7 +184,7 @@ Contributions are welcome. New commits/Pull Requests must:
 
 2. Have tests passing. Run `test` script before committing/pushing.
 
-**@NOTE**: testing RxJS is currently really hard. This repo contains some custom utilities to improve testing and error reports. The following console output is not standard and totally custom, so be aware of possible issues.
+**@NOTE**: testing RxJS is currently really hard. This repo uses [Jest](http://facebook.github.io/jest/) contains some custom utilities to improve testing and error reports. The following console output is not standard and totally custom, so be aware of possible issues.
 
 Nevertheless marbles are awesome!
 
