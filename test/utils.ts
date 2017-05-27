@@ -13,11 +13,27 @@ function notificationToMarble(notification: Notification<any>): string {
 
 // @TODO: support groups of subsequent emits
 function testMessagesToMarbles(messages: TestMessage[]): string {
+  let areGrouped = false;
+
   return messages.reduce((marbles, message, index) => {
     const prevMessage = index === 0 ? { frame: 0 } : messages[index - 1];
     const frames = message.frame - prevMessage.frame;
+    let valueMarble = notificationToMarble(message.notification);
 
-    return marbles + repeat('-', frames / 10) + notificationToMarble(message.notification);
+    const nextMessages = index === messages.length - 1 ? { frame: Infinity } : messages[index + 1];
+    const isGroupedWithNext = nextMessages.frame - message.frame === 0;
+
+    if (isGroupedWithNext && !areGrouped) {
+      // First value of the group
+      areGrouped = true;
+      valueMarble = '(' + valueMarble;
+    } else if (!isGroupedWithNext && areGrouped) {
+      // Last value of the group
+      areGrouped = false;
+      valueMarble = valueMarble + ')';
+    }
+
+    return marbles + repeat('-', frames / 10) + valueMarble;
   }, '');
 }
 
