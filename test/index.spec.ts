@@ -102,17 +102,24 @@ describe('Backoff behaviour', function() {
   });
 
   test('It should retry on error', () => {
+    const source$ = scheduler.createColdObservable('-1-2-#');
+    const expected =                               '-1-2----1-(2|)';
+    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(4);
+
+    scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
+    scheduler.flush();
+  });
+
+  test('It should reset delays on not consecutive errors', () => {
     /**
-     * This test is a bit tricky. It tests that the source$ errored only once
-     * and that the error has been recovered. It MUST although avoid erroring twice
-     * because `.retryWhen` doesn't reset its state after recover. This cause the
-     * second error to continue the series of increasing delays, like 2 consequent
+     * `.retryWhen` doesn't reset its state after a recover. This cause the
+     * next error to continue the series of increasing delays, like 2 consecutive
      * errors would do.
      * @see https://github.com/ReactiveX/rxjs/issues/1413
      */
     const source$ = scheduler.createColdObservable('-1-2-#');
-    const expected =                               '-1-2----1-(2|)';
-    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(4);
+    const expected =                               '-1-2----1-2----(1|)';
+    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(5);
 
     scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
     scheduler.flush();
