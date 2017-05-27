@@ -16,19 +16,26 @@ function assertDeepEqual(actual, expected) {
   }
 }
 
+function setPageActive(isActive: boolean) {
+  Object.defineProperty(document, 'hidden', {
+    value: !isActive,
+    configurable: true,
+  });
+}
+
 describe('Basic behaviour', function() {
-  let listener: (event: any) => void;
   let scheduler: Rx.TestScheduler;
 
   beforeEach(() => {
     Object.defineProperty(document, 'hidden', {
       value: false,
+      configurable: true,
     });
 
     scheduler = new Rx.TestScheduler(assertDeepEqual);
 
     document.addEventListener = function(eventType, callback) {
-      listener = callback;
+      // Noop
     };
 
     document.removeEventListener = () => void(0);
@@ -36,28 +43,42 @@ describe('Basic behaviour', function() {
   });
 
   test('It should poll the source$ every interval', () => {
-    const source$ = Rx.Observable.of('Hello');
+    const source$ = Rx.Observable.of(1);
     const polling$ = polling(source$, { interval: 20 }, scheduler).take(3);
-    const expected = 'x-y-(z|)';
+    const expected = '1-1-(1|)';
 
-    scheduler.expectObservable(polling$).toBe(expected, { x: 'Hello', y: 'Hello', z: 'Hello' });
+    scheduler.expectObservable(polling$).toBe(expected, { 1: 1 });
     scheduler.flush();
   });
 
-  test('It should retry on error', () => {
-    /**
-     * This test is a bit tricky. It tests that the source$ errored only once
-     * and that the error has been recovered. It MUST although avoid erroring twice
-     * because `.retryWhen` doesn't reset its state after recover. This cause the
-     * second error to continue the series of increasing delays, like 2 consequent
-     * errors would do.
-     * @see https://github.com/ReactiveX/rxjs/issues/1413
-     */
-    const source$ = scheduler.createColdObservable('-1-2-#');
-    const expected =                               '-1-2----1-(2|)';
-    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(4);
+  test('It should not poll if the tab is inactive', () => {
+    setPageActive(false);
 
-    scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
+    const source$ = Rx.Observable.of('Hello');
+    const polling$ = polling(source$, { interval: 20 }, scheduler).take(3);
+    const expected = '----';
+
+    scheduler.expectObservable(polling$).toBe(expected);
+    scheduler.flush();
+  });
+
+  test('It should restart polling if the tab changes to active', () => {
+    setPageActive(false);
+    document.addEventListener = function(eventType, listener) {
+      // At frame 40 simulate 'visibilitychange' Event
+      Rx.Observable.timer(40, null, scheduler)
+        .map(() => 'event')
+        .subscribe(() => {
+          setPageActive(true);
+          listener();
+        });
+    };
+
+    const source$ = Rx.Observable.of(1);
+    const polling$ = polling(source$, { interval: 20 }, scheduler).take(1);
+    const expected = '----(1|)';
+
+    scheduler.expectObservable(polling$).toBe(expected, { 1: 1 });
     scheduler.flush();
   });
 });
@@ -78,6 +99,23 @@ describe('Backoff behaviour', function() {
 
     document.removeEventListener = () => void(0);
     document.dispatchEvent = () => void(0);
+  });
+
+  test('It should retry on error', () => {
+    /**
+     * This test is a bit tricky. It tests that the source$ errored only once
+     * and that the error has been recovered. It MUST although avoid erroring twice
+     * because `.retryWhen` doesn't reset its state after recover. This cause the
+     * second error to continue the series of increasing delays, like 2 consequent
+     * errors would do.
+     * @see https://github.com/ReactiveX/rxjs/issues/1413
+     */
+    const source$ = scheduler.createColdObservable('-1-2-#');
+    const expected =                               '-1-2----1-(2|)';
+    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(4);
+
+    scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
+    scheduler.flush();
   });
 
   test('It should retry with esponential backoff if the strategy is \'esponential\'', () => {
