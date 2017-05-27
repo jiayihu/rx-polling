@@ -40,7 +40,7 @@ module.exports = {
   entry: root.src,
   output: {
     path: root.dest,
-    filename: 'dist/main.js',
+    filename: 'main.js',
   },
   resolve: {
     extensions: ['.js', '.ts'],
