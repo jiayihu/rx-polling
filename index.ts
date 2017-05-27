@@ -13,10 +13,6 @@ import 'rxjs/add/operator/scan';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/switchMap';
 
-function isPageActive(): boolean {
-  return !Boolean(document.hidden);
-}
-
 export interface IOptions {
   /**
    * Period of the interval to run the source$
@@ -100,9 +96,9 @@ export default function polling<T>( request$: Observable<T>, userOptions: IOptio
             }, 0).switchMap(errorCount => {
               allErrorsCount = errorCount;
               const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;
-              const esponentialDelay = Math.pow(2, consecutiveErrorsCount) * options.esponentialUnit;
+              const delay = getStrategyDelay(consecutiveErrorsCount, options);
 
-              return Observable.timer(esponentialDelay, null, scheduler);
+              return Observable.timer(delay, null, scheduler);
             });
           });
       }
@@ -112,4 +108,28 @@ export default function polling<T>( request$: Observable<T>, userOptions: IOptio
       // Update the counter after every successful polling
       lastRecoverCount = allErrorsCount;
     });
+}
+
+function isPageActive(): boolean {
+  return !Boolean(document.hidden);
+}
+
+function getStrategyDelay(consecutiveErrorsCount: number, options: IOptions): number {
+  switch (options.backoffStrategy) {
+    case 'esponential':
+      return Math.pow(2, consecutiveErrorsCount) * options.esponentialUnit;
+
+    case 'random':
+      const [min, max] = options.randomRange;
+      const range = max - min;
+      return Math.floor(Math.random() * range) + min;
+
+    case 'consecutive':
+      return options.constantTime;
+
+    default:
+      console.error(`${options.backoffStrategy} is not a backoff strategy supported by rx-polling`);
+      // Return a value anyway to avoid throwing
+      return options.constantTime;
+  }
 }

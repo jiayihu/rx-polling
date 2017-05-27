@@ -81,25 +81,6 @@ describe('Basic behaviour', function() {
     scheduler.expectObservable(polling$).toBe(expected, { 1: 1 });
     scheduler.flush();
   });
-});
-
-describe('Backoff behaviour', function() {
-  let scheduler: Rx.TestScheduler;
-
-  beforeEach(() => {
-    Object.defineProperty(document, 'hidden', {
-      value: false,
-    });
-
-    scheduler = new Rx.TestScheduler(assertDeepEqual);
-
-    document.addEventListener = function(eventType, callback) {
-      // Noop
-    };
-
-    document.removeEventListener = () => void(0);
-    document.dispatchEvent = () => void(0);
-  });
 
   test('It should retry on error', () => {
     const source$ = scheduler.createColdObservable('-1-2-#');
@@ -124,22 +105,92 @@ describe('Backoff behaviour', function() {
     scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
     scheduler.flush();
   });
+});
 
-  test('It should retry with esponential backoff if the strategy is \'esponential\'', () => {
-    const timerMock = jest.fn(() => {
+describe('Backoff behaviour', function() {
+  let scheduler: Rx.TestScheduler;
+  let timerMock: jest.Mock<any>;
+
+  beforeEach(() => {
+    Object.defineProperty(document, 'hidden', {
+      value: false,
+    });
+
+    timerMock = jest.fn(() => {
       // Emit immediately
       return Rx.Observable.of(null);
     });
     Rx.Observable.timer = timerMock;
 
-    const polling$ = polling(Rx.Observable.throw('Hello'), { interval: 80, esponentialUnit: 10 }, scheduler);
+    scheduler = new Rx.TestScheduler(assertDeepEqual);
+
+    document.addEventListener = function(eventType, callback) {
+      // Noop
+    };
+
+    document.removeEventListener = () => void(0);
+    document.dispatchEvent = () => void(0);
+  });
+
+  test('It should throw after all failed attempts', () => {
+    const polling$ = polling(Rx.Observable.throw('Hello'), {interval: 10, attempts: 9 }, scheduler);
     polling$.subscribe(() => {
       // Noop
     }, (error) => {
       expect(error).toBe('Hello');
     });
 
+    expect(timerMock).toHaveBeenCalledTimes(9);
+  });
+
+  test('It should retry with esponential backoff if the strategy is \'esponential\'', () => {
+    const polling$ = polling(Rx.Observable.throw('Hello'), {
+      interval: 10,
+      backoffStrategy: 'esponential',
+      esponentialUnit: 10,
+    }, scheduler);
+    polling$.subscribe(() => {
+      // Noop
+    }, () => {
+      // Noop
+    });
+
     const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
     expect(callDelays).toEqual([20, 40, 80, 160, 320, 640, 1280, 2560, 5120]);
+  });
+
+  test('It should retry with random backoff if the strategy is \'random\'', () => {
+    const polling$ = polling(Rx.Observable.throw('Hello'), {
+      interval: 10,
+      backoffStrategy: 'random',
+      randomRange: [1000, 10000],
+    }, scheduler);
+    polling$.subscribe(() => {
+      // Noop
+    }, () => {
+      // Noop
+    });
+
+    const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
+    callDelays.forEach(delay => {
+      expect(delay).toBeLessThanOrEqual(10000);
+      expect(delay).toBeGreaterThanOrEqual(1000);
+    });
+  });
+
+  test('It should retry with constant backoff if the strategy is \'consecutive\'', () => {
+    const polling$ = polling(Rx.Observable.throw('Hello'), {
+      interval: 10,
+      backoffStrategy: 'consecutive',
+      constantTime: 1000,
+    }, scheduler);
+    polling$.subscribe(() => {
+      // Noop
+    }, () => {
+      // Noop
+    });
+
+    const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
+    callDelays.forEach(delay => expect(delay).toBe(1000));
   });
 });
