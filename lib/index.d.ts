@@ -19,9 +19,31 @@ export interface IOptions {
      */
     attempts?: number;
     /**
-     * Esponential delay factors (2, 4, 16, 32...) will be multiplied to the unit to get final amount
+     * Strategy taken on source$ errors, with attempts to recover.
+     *
+     * 'esponential' will retry waiting an increasing esponential time between attempts.
+     * You can pass the unit amount, which will be multiplied to the esponential factor.
+     *
+     * 'random' will retry waiting a random time between attempts. You can pass the range of randomness.
+     *
+     * 'consecutive' will retry waiting a constant time between attempts. You can
+     * pass the constant, otherwise the polling interval will be used.
+     */
+    backoffStrategy?: 'esponential' | 'random' | 'consecutive';
+    /**
+     * Esponential delay factors (2, 4, 16, 32...) will be multiplied to the unit
+     * to get final amount if 'esponential' strategy is used.
      */
     esponentialUnit?: number;
+    /**
+     * Range of milli-seconds to pick a random delay between error retries if 'random'
+     * strategy is used.
+     */
+    randomRange?: [number, number];
+    /**
+     * Constant time to delay error retries if 'consecutive' strategy is used
+     */
+    constantTime?: number;
 }
 /**
  * Run a polling stream for the source$
