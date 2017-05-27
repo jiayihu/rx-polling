@@ -11,11 +11,9 @@ function notificationToMarble(notification: Notification<any>): string {
   if (notification.kind === 'C') return '|';
 }
 
-// @TODO: support groups of subsequent emits
 function testMessagesToMarbles(messages: TestMessage[]): string {
   let areGrouped = false;
-
-  return messages.reduce((marbles, message, index) => {
+  const marbles = messages.reduce((prevMarbles, message, index) => {
     const prevMessage = index === 0 ? { frame: 0 } : messages[index - 1];
     const frames = message.frame - prevMessage.frame;
     let valueMarble = notificationToMarble(message.notification);
@@ -33,8 +31,10 @@ function testMessagesToMarbles(messages: TestMessage[]): string {
       valueMarble = valueMarble + ')';
     }
 
-    return marbles + repeat('-', frames / 10) + valueMarble;
+    return prevMarbles + repeat('-', frames / 10 - 1) + valueMarble;
   }, '');
+
+  return '-' + marbles; // Prepend frame 0
 }
 
 /**
@@ -48,7 +48,6 @@ export function diffTestMessages(actual: TestMessage[], expected: TestMessage[])
 
   return chalk.green(marblesB + ' (Expected)') + '\n' + chalk.red(marblesA + ' (Received)');
 }
-
 
 /**
  * Returns an Observable, very similar to `Observable.of()` but it errors on the
@@ -68,5 +67,5 @@ export function getErrorObservable(): Observable<number> {
 
     observer.error(counter);
     return;
-  })
+  });
 }
