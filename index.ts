@@ -125,11 +125,11 @@ function getStrategyDelay(consecutiveErrorsCount: number, options: IOptions): nu
       return Math.floor(Math.random() * range) + min;
 
     case 'consecutive':
-      return options.constantTime;
+      return options.constantTime || options.interval;
 
     default:
       console.error(`${options.backoffStrategy} is not a backoff strategy supported by rx-polling`);
       // Return a value anyway to avoid throwing
-      return options.constantTime;
+      return options.constantTime || options.interval;
   }
 }
