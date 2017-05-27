@@ -7,7 +7,7 @@
 - pause and resume if the browser tab is inactive/active
 - N retry attempts if the request errors
 - Different **backoff strategies** if the request errors:
-  1. *esponential*: it will wait 2, 4, ... 64, 256 seconds between attempts.
+  1. *esponential*: it will wait 2, 4, ... 64, 256 seconds between attempts. (Default)
   2. *random*: it will wait a random time amount between attempts.
   3. *consecutive*: it will wait a constant time amount between attempts.
 - Observables: it accepts any Observable as input and **it returns an Observable**, which means it can be combined with other Observables as any other RxJS stream.
