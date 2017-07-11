@@ -31,7 +31,7 @@ let subscription = polling(request$, { interval: 1000 }).subscribe((comments) =>
         <p>Select a backoff strategy</p>
         <div class="form-check form-check-inline">
           <label class="form-check-label">
-            <input class="form-check-input" checked type="radio" name="strategy" value="esponential"> Esponential
+            <input class="form-check-input" checked type="radio" name="strategy" value="exponential"> Exponential
           </label>
         </div>
         <div class="form-check form-check-inline">
