@@ -85,7 +85,7 @@ describe('Basic behaviour', function() {
   test('It should retry on error', () => {
     const source$ = scheduler.createColdObservable('-1-2-#');
     const expected =                               '-1-2----1-(2|)';
-    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(4);
+    const polling$ = polling(source$, { interval: 60, exponentialUnit: 10 }, scheduler).take(4);
 
     scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
     scheduler.flush();
@@ -100,7 +100,7 @@ describe('Basic behaviour', function() {
      */
     const source$ = scheduler.createColdObservable('-1-2-#');
     const expected =                               '-1-2----1-2----(1|)';
-    const polling$ = polling(source$, { interval: 60, esponentialUnit: 10 }, scheduler).take(5);
+    const polling$ = polling(source$, { interval: 60, exponentialUnit: 10 }, scheduler).take(5);
 
     scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
     scheduler.flush();
@@ -143,11 +143,11 @@ describe('Backoff behaviour', function() {
     expect(timerMock).toHaveBeenCalledTimes(9);
   });
 
-  test('It should retry with esponential backoff if the strategy is \'esponential\'', () => {
+  test('It should retry with exponential backoff if the strategy is \'exponential\'', () => {
     const polling$ = polling(Rx.Observable.throw('Hello'), {
       interval: 10,
-      backoffStrategy: 'esponential',
-      esponentialUnit: 10,
+      backoffStrategy: 'exponential',
+      exponentialUnit: 10,
     }, scheduler);
     polling$.subscribe(() => {
       // Noop

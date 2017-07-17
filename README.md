@@ -7,7 +7,7 @@
 - pause and resume if the browser tab is inactive/active
 - N retry attempts if the request errors
 - Different **backoff strategies** if the request errors:
-  1. *esponential*: it will wait 2, 4, ... 64, 256 seconds between attempts. (Default)
+  1. *exponential*: it will wait 2, 4, ... 64, 256 seconds between attempts. (Default)
   2. *random*: it will wait a random time amount between attempts.
   3. *consecutive*: it will wait a constant time amount between attempts.
 - Observables: it accepts any Observable as input and **it returns an Observable**, which means it can be combined with other Observables as any other RxJS stream.
@@ -44,7 +44,7 @@ polling(request$, { interval: 5000 }).subscribe((comments) => {
   console.log(comments);
 }, (error) => {
   // The Observable will throw if it's not able to recover after N attempts
-  // By default it will attempts 9 times with esponential delay between each other.
+  // By default it will attempts 9 times with exponential delay between each other.
   console.error(error);
 });
 ```
@@ -134,21 +134,21 @@ export interface IOptions {
   /**
    * Strategy taken on source$ errors, with attempts to recover.
    *
-   * 'esponential' will retry waiting an increasing esponential time between attempts.
-   * You can pass the unit amount, which will be multiplied to the esponential factor.
+   * 'exponential' will retry waiting an increasing exponential time between attempts.
+   * You can pass the unit amount, which will be multiplied to the exponential factor.
    *
    * 'random' will retry waiting a random time between attempts. You can pass the range of randomness.
    *
    * 'consecutive' will retry waiting a constant time between attempts. You can
    * pass the constant, otherwise the polling interval will be used.
    */
-  backoffStrategy?: 'esponential' | 'random' | 'consecutive';
+  backoffStrategy?: 'exponential' | 'random' | 'consecutive';
 
   /**
-   * Esponential delay factors (2, 4, 16, 32...) will be multiplied to the unit
-   * to get final amount if 'esponential' strategy is used.
+   * Exponential delay factors (2, 4, 16, 32...) will be multiplied to the unit
+   * to get final amount if 'exponential' strategy is used.
    */
-  esponentialUnit?: number;
+  exponentialUnit?: number;
 
   /**
    * Range of milli-seconds to pick a random delay between error retries if 'random'
@@ -164,8 +164,8 @@ export interface IOptions {
 
 const defaultOptions: IOptions = {
   attempts: 9,
-  backoffStrategy: 'esponential',
-  esponentialUnit: 1000, // 1 second
+  backoffStrategy: 'exponential',
+  exponentialUnit: 1000, // 1 second
   randomRange: [1000, 10000],
 };
 ```

@@ -27,21 +27,21 @@ export interface IOptions {
   /**
    * Strategy taken on source$ errors, with attempts to recover.
    *
-   * 'esponential' will retry waiting an increasing esponential time between attempts.
-   * You can pass the unit amount, which will be multiplied to the esponential factor.
+   * 'exponential' will retry waiting an increasing exponential time between attempts.
+   * You can pass the unit amount, which will be multiplied to the exponential factor.
    *
    * 'random' will retry waiting a random time between attempts. You can pass the range of randomness.
    *
    * 'consecutive' will retry waiting a constant time between attempts. You can
    * pass the constant, otherwise the polling interval will be used.
    */
-  backoffStrategy?: 'esponential' | 'random' | 'consecutive';
+  backoffStrategy?: 'exponential' | 'random' | 'consecutive';
 
   /**
-   * Esponential delay factors (2, 4, 16, 32...) will be multiplied to the unit
-   * to get final amount if 'esponential' strategy is used.
+   * Exponential delay factors (2, 4, 16, 32...) will be multiplied to the unit
+   * to get final amount if 'exponential' strategy is used.
    */
-  esponentialUnit?: number;
+  exponentialUnit?: number;
 
   /**
    * Range of milli-seconds to pick a random delay between error retries if 'random'
@@ -57,8 +57,8 @@ export interface IOptions {
 
 const defaultOptions: Partial<IOptions> = {
   attempts: 9,
-  backoffStrategy: 'esponential',
-  esponentialUnit: 1000, // 1 second
+  backoffStrategy: 'exponential',
+  exponentialUnit: 1000, // 1 second
   randomRange: [1000, 10000],
 };
 
@@ -116,8 +116,8 @@ function isPageActive(): boolean {
 
 function getStrategyDelay(consecutiveErrorsCount: number, options: IOptions): number {
   switch (options.backoffStrategy) {
-    case 'esponential':
-      return Math.pow(2, consecutiveErrorsCount) * options.esponentialUnit;
+    case 'exponential':
+      return Math.pow(2, consecutiveErrorsCount) * options.exponentialUnit;
 
     case 'random':
       const [min, max] = options.randomRange;
