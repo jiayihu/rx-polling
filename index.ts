@@ -68,7 +68,11 @@ const defaultOptions: Partial<IOptions> = {
  * @param userOptions Polling options
  * @param scheduler Scheduler of internal timers. Useful for testing.
  */
-export default function polling<T>( request$: Observable<T>, userOptions: IOptions, scheduler?: Scheduler ): Observable<T> {
+export default function polling<T>(
+  request$: Observable<T>,
+  userOptions: IOptions,
+  scheduler?: Scheduler
+): Observable<T> {
   const options = Object.assign({}, defaultOptions, userOptions);
 
   /**
@@ -88,23 +92,26 @@ export default function polling<T>( request$: Observable<T>, userOptions: IOptio
           .startWith(null) // Immediately run the first call
           .switchMap(() => request$)
           .retryWhen(errors$ => {
-            return errors$.scan((errorCount, err) => {
-              // If already tempted too many times don't retry
-              if (errorCount >= options.attempts) throw err;
+            return errors$
+              .scan((errorCount, err) => {
+                // If already tempted too many times don't retry
+                if (errorCount >= options.attempts) throw err;
 
-              return errorCount + 1;
-            }, 0).switchMap(errorCount => {
-              allErrorsCount = errorCount;
-              const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;
-              const delay = getStrategyDelay(consecutiveErrorsCount, options);
+                return errorCount + 1;
+              }, 0)
+              .switchMap(errorCount => {
+                allErrorsCount = errorCount;
+                const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;
+                const delay = getStrategyDelay(consecutiveErrorsCount, options);
 
-              return Observable.timer(delay, null, scheduler);
-            });
+                return Observable.timer(delay, null, scheduler);
+              });
           });
       }
 
       return Observable.empty();
-    }).do(() => {
+    })
+    .do(() => {
       // Update the counter after every successful polling
       lastRecoverCount = allErrorsCount;
     });
