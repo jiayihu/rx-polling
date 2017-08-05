@@ -7,7 +7,7 @@
     "build": "npm run clean && webpack",
     "clean": "rimraf dist",
     "deploy": "npm run build && gh-pages -d dist",
-    "start": "webpack-dev-server --inline"
+    "start": "webpack-dev-server --inline --hot"
   },
   "author": "Jiayi Hu <jiayi.ghu@gmail.com>",
   "license": "MIT",

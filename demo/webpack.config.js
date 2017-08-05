@@ -16,7 +16,8 @@ const devPlugins = [];
 const prodPlugins = [
   new CopyWebpackPlugin([
     { from: './index.html', to: 'index.html' },
-    { from: './assets', to: 'assets' }
+    { from: './favicon.ico', to: 'favicon.ico' },
+    { from: './assets', to: 'assets' },
   ]),
   new webpack.optimize.UglifyJsPlugin({
     compressor: {
@@ -31,23 +32,24 @@ const prodPlugins = [
 ];
 
 module.exports = {
-  devServer: IS_DEV ? {
-    historyApiFallback: true,
-    noInfo: false,
-    port: 3000,
-  } : {},
+  devServer: IS_DEV
+    ? {
+        historyApiFallback: true,
+        noInfo: false,
+        port: 3000,
+      }
+    : {},
   devtool: 'eval',
   entry: root.src,
   output: {
     path: root.dest,
-    filename: 'main.js',
+    filename: 'js/main.js',
   },
   resolve: {
     extensions: ['.js', '.ts'],
   },
   module: {
-    rules: [
-    ],
+    rules: [],
   },
   plugins: IS_DEV ? devPlugins : prodPlugins,
 };

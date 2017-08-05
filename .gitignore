@@ -6,6 +6,7 @@ node_modules
 # Editor configs
 .idea
 .vscode
+demo/dist
 
 # Compiled source #
 ###################
