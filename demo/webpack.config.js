@@ -8,7 +8,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const root = {
   src: path.join(__dirname),
-  dest: path.join(__dirname, 'dist/'),
+  dest: path.join(__dirname, './'),
 };
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
