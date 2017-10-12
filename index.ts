@@ -93,15 +93,17 @@ export default function polling<T>(
           .switchMap(() => request$)
           .retryWhen(errors$ => {
             return errors$
-              .scan((errorCount, err) => {
-                // If already tempted too many times don't retry
-                if (errorCount >= options.attempts) throw err;
-
-                return errorCount + 1;
-              }, 0)
-              .switchMap(errorCount => {
+              .scan(({ errorCount, error }, err) => ({ errorCount: errorCount + 1, error: err }), {
+                errorCount: 0,
+                error: null,
+              })
+              .switchMap(({ errorCount, error }) => {
                 allErrorsCount = errorCount;
                 const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;
+
+                // If already tempted too many times don't retry
+                if (consecutiveErrorsCount > options.attempts) throw error;
+
                 const delay = getStrategyDelay(consecutiveErrorsCount, options);
 
                 return Observable.timer(delay, null, scheduler);

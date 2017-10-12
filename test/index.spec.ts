@@ -67,10 +67,13 @@ describe('Basic behaviour', function() {
     setPageActive(false);
     document.addEventListener = function(eventType, listener) {
       // At frame 40 simulate 'visibilitychange' Event
-      Rx.Observable.timer(40, null, scheduler).map(() => 'event').subscribe(() => {
-        setPageActive(true);
-        listener();
-      });
+      Rx.Observable
+        .timer(40, null, scheduler)
+        .map(() => 'event')
+        .subscribe(() => {
+          setPageActive(true);
+          listener();
+        });
     };
 
     const source$ = Rx.Observable.of(1);
@@ -175,7 +178,7 @@ describe('Backoff behaviour', function() {
     expect(timerMock).toHaveBeenCalledTimes(9);
   });
 
-  test("It should retry with exponential backoff if the strategy is 'exponential'", () => {
+  test('It should retry with exponential backoff if the strategy is \'exponential\'', () => {
     const polling$ = polling(
       Rx.Observable.throw('Hello'),
       {
@@ -198,7 +201,7 @@ describe('Backoff behaviour', function() {
     expect(callDelays).toEqual([20, 40, 80, 160, 320, 640, 1280, 2560, 5120]);
   });
 
-  test("It should retry with random backoff if the strategy is 'random'", () => {
+  test('It should retry with random backoff if the strategy is \'random\'', () => {
     const polling$ = polling(
       Rx.Observable.throw('Hello'),
       {
@@ -224,7 +227,7 @@ describe('Backoff behaviour', function() {
     });
   });
 
-  test("It should retry with constant backoff if the strategy is 'consecutive'", () => {
+  test('It should retry with constant backoff if the strategy is \'consecutive\'', () => {
     const polling$ = polling(
       Rx.Observable.throw('Hello'),
       {
