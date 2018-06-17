@@ -1,15 +1,16 @@
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/dom/ajax';
-import 'rxjs/add/operator/map';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
 
 import polling from '../lib/';
 
-const request$ = Observable.ajax({
+const request$ = ajax({
   url: 'https://jsonplaceholder.typicode.com/comments/',
-  crossDomain: true,
-})
-  .map(response => response.response || [])
-  .map(response => response.slice(0, 10)); // Take only first 10 comments
+  crossDomain: true
+}).pipe(
+  map(response => response.response || []),
+  map(response => response.slice(0, 10)) // Take only first 10 comments
+);
 
 let subscription;
 
@@ -21,7 +22,7 @@ document.querySelector('.start').addEventListener('click', function() {
   subscription = polling(request$, {
     interval: 3000,
     backoffStrategy: strategy,
-    attempts: 4,
+    attempts: 4
   }).subscribe(
     comments => {
       console.group('Received data from polling');

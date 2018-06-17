@@ -1,8 +1,7 @@
 import repeat from 'lodash/repeat';
-import { TestMessage } from 'rxjs/testing/TestMessage';
-import { Notification } from 'rxjs/Notification';
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
+import { TestMessage } from 'rxjs/internal/testing/TestMessage';
+import { Notification } from 'rxjs/internal/Notification';
+import { Observable, Observer } from 'rxjs';
 import chalk from 'chalk';
 
 function notificationToMarble(notification: Notification<any>): string {
@@ -31,7 +30,7 @@ function testMessagesToMarbles(messages: TestMessage[]): string {
       valueMarble = valueMarble + ')';
     }
 
-    return prevMarbles + repeat('-', frames / 10 - 1) + valueMarble;
+    return prevMarbles + repeat('-', frames - 1) + valueMarble;
   }, '');
 
   return '-' + marbles; // Prepend frame 0

@@ -1,17 +1,6 @@
-import { Observable } from 'rxjs/Observable';
-import { Observer } from 'rxjs/Observer';
-import { Scheduler } from 'rxjs/Scheduler';
+import { Observable, Observer, Scheduler, fromEvent, interval, timer, empty } from 'rxjs';
 
-import 'rxjs/add/observable/empty';
-import 'rxjs/add/observable/fromEvent';
-import 'rxjs/add/observable/interval';
-import 'rxjs/add/observable/timer';
-
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/retryWhen';
-import 'rxjs/add/operator/scan';
-import 'rxjs/add/operator/startWith';
-import 'rxjs/add/operator/switchMap';
+import { tap, retryWhen, scan, startWith, switchMap } from 'rxjs/operators';
 
 export interface IOptions {
   /**
@@ -59,20 +48,15 @@ const defaultOptions: Partial<IOptions> = {
   attempts: 9,
   backoffStrategy: 'exponential',
   exponentialUnit: 1000, // 1 second
-  randomRange: [1000, 10000],
+  randomRange: [1000, 10000]
 };
 
 /**
  * Run a polling stream for the source$
  * @param request$ Source Observable which will be ran every interval
  * @param userOptions Polling options
- * @param scheduler Scheduler of internal timers. Useful for testing.
  */
-export default function polling<T>(
-  request$: Observable<T>,
-  userOptions: IOptions,
-  scheduler?: Scheduler
-): Observable<T> {
+export default function polling<T>(request$: Observable<T>, userOptions: IOptions): Observable<T> {
   const options = Object.assign({}, defaultOptions, userOptions);
 
   /**
@@ -84,20 +68,20 @@ export default function polling<T>(
   let allErrorsCount = 0;
   let lastRecoverCount = 0;
 
-  return Observable.fromEvent(document, 'visibilitychange')
-    .startWith(null)
-    .switchMap(() => {
+  return fromEvent(document, 'visibilitychange').pipe(
+    startWith(null),
+    switchMap(() => {
       if (isPageActive()) {
-        return Observable.interval(options.interval, scheduler)
-          .startWith(null) // Immediately run the first call
-          .switchMap(() => request$)
-          .retryWhen(errors$ => {
-            return errors$
-              .scan(({ errorCount, error }, err) => ({ errorCount: errorCount + 1, error: err }), {
+        return interval(options.interval).pipe(
+          startWith(null), // Immediately run the first call
+          switchMap(() => request$),
+          retryWhen(errors$ => {
+            return errors$.pipe(
+              scan(({ errorCount, error }, err) => ({ errorCount: errorCount + 1, error: err }), {
                 errorCount: 0,
-                error: null,
-              })
-              .switchMap(({ errorCount, error }) => {
+                error: null
+              }),
+              switchMap(({ errorCount, error }) => {
                 allErrorsCount = errorCount;
                 const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;
 
@@ -106,17 +90,20 @@ export default function polling<T>(
 
                 const delay = getStrategyDelay(consecutiveErrorsCount, options);
 
-                return Observable.timer(delay, null, scheduler);
-              });
-          });
+                return timer(delay, null);
+              })
+            );
+          })
+        );
       }
 
-      return Observable.empty();
-    })
-    .do(() => {
+      return empty();
+    }),
+    tap<T>(() => {
       // Update the counter after every successful polling
       lastRecoverCount = allErrorsCount;
-    });
+    })
+  );
 }
 
 function isPageActive(): boolean {
@@ -126,7 +113,7 @@ function isPageActive(): boolean {
 function getStrategyDelay(consecutiveErrorsCount: number, options: IOptions): number {
   switch (options.backoffStrategy) {
     case 'exponential':
-      return Math.pow(2, consecutiveErrorsCount) * options.exponentialUnit;
+      return Math.pow(2, consecutiveErrorsCount - 1) * options.exponentialUnit;
 
     case 'random':
       const [min, max] = options.randomRange;

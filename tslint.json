@@ -1,6 +1,5 @@
 {
-  "extends": "tslint:recommended",
-
+  "extends": ["tslint:recommended", "rxjs-tslint"],
   "rules": {
     "arrow-parens": false,
     "curly": false,
@@ -16,13 +15,8 @@
     "no-string-throw": false,
     "no-var-requires": false,
     "ordered-imports": [false],
-    "quotemark": [true, "single"],
-    "trailing-comma": [true, { "multiline": {
-      "objects": "always",
-      "arrays": "always",
-      "functions": "never",
-      "typeLiterals": "ignore"
-    }, "singleline": "never" }],
+    "quotemark": [false],
+    "trailing-comma": [false],
     "variable-name": [true, "check-format", "allow-leading-underscore"]
   }
 }

@@ -1,8 +1,10 @@
-import Rx from 'rxjs/Rx';
+import { Observable, of, timer, throwError, Observer } from 'rxjs';
+import { take, map } from 'rxjs/operators';
+import { TestScheduler } from 'rxjs/testing';
+import * as RxMock from 'rxjs';
 import polling from '../index';
 import matchers from 'jest-matchers/build/matchers';
 import { diffTestMessages } from './utils';
-import { Observable } from 'rxjs/Observable';
 
 /**
  * Simple Matcher which uses Jest nice diffs messages. Original `.toEqual` is not
@@ -20,20 +22,20 @@ function assertDeepEqual(actual, expected) {
 function setPageActive(isActive: boolean) {
   Object.defineProperty(document, 'hidden', {
     value: !isActive,
-    configurable: true,
+    configurable: true
   });
 }
 
 describe('Basic behaviour', function() {
-  let scheduler: Rx.TestScheduler;
+  let scheduler: TestScheduler;
 
   beforeEach(() => {
     Object.defineProperty(document, 'hidden', {
       value: false,
-      configurable: true,
+      configurable: true
     });
 
-    scheduler = new Rx.TestScheduler(assertDeepEqual);
+    scheduler = new TestScheduler(assertDeepEqual);
 
     document.addEventListener = function(eventType, callback) {
       // Noop
@@ -44,44 +46,47 @@ describe('Basic behaviour', function() {
   });
 
   test('It should poll the source$ every interval', () => {
-    const source$ = Rx.Observable.of(1);
-    const polling$ = polling(source$, { interval: 20 }, scheduler).take(3);
-    const expected = '1-1-(1|)';
+    scheduler.run(helpers => {
+      const source$ = of(1);
+      const polling$ = polling(source$, { interval: 2 }).pipe(take(3));
+      const expected = '1-1-(1|)';
 
-    scheduler.expectObservable(polling$).toBe(expected, { 1: 1 });
-    scheduler.flush();
+      helpers.expectObservable(polling$).toBe(expected, { 1: 1 });
+    });
   });
 
   test('It should not poll if the tab is inactive', () => {
     setPageActive(false);
 
-    const source$ = Rx.Observable.of('Hello');
-    const polling$ = polling(source$, { interval: 20 }, scheduler).take(3);
-    const expected = '----';
+    scheduler.run(helpers => {
+      const source$ = of('Hello');
+      const polling$ = polling(source$, { interval: 2 }).pipe(take(3));
+      const expected = '----';
 
-    scheduler.expectObservable(polling$).toBe(expected);
-    scheduler.flush();
+      helpers.expectObservable(polling$).toBe(expected);
+    });
   });
 
   test('It should restart polling if the tab changes to active', () => {
     setPageActive(false);
-    document.addEventListener = function(eventType, listener) {
-      // At frame 40 simulate 'visibilitychange' Event
-      Rx.Observable
-        .timer(40, null, scheduler)
-        .map(() => 'event')
-        .subscribe(() => {
-          setPageActive(true);
-          listener();
-        });
-    };
 
-    const source$ = Rx.Observable.of(1);
-    const polling$ = polling(source$, { interval: 20 }, scheduler).take(1);
-    const expected = '----(1|)';
+    scheduler.run(helpers => {
+      document.addEventListener = function(eventType, listener) {
+        // At frame 4 simulate 'visibilitychange' Event
+        timer(4, null)
+          .pipe(map(() => 'event'))
+          .subscribe(() => {
+            setPageActive(true);
+            listener();
+          });
+      };
 
-    scheduler.expectObservable(polling$).toBe(expected, { 1: 1 });
-    scheduler.flush();
+      const source$ = of(1);
+      const polling$ = polling(source$, { interval: 20 }).pipe(take(1));
+      const expected = '----(1|)';
+
+      helpers.expectObservable(polling$).toBe(expected, { 1: 1 });
+    });
   });
 
   test('It should stop polling on unsubscription', done => {
@@ -90,7 +95,7 @@ describe('Basic behaviour', function() {
       spy();
       observer.next(1);
     });
-    const polling$ = polling(source$, { interval: 50 });
+    const polling$ = polling(source$, { interval: 5 });
 
     const subscription = polling$.subscribe(() => {
       // Noop
@@ -102,55 +107,59 @@ describe('Basic behaviour', function() {
       // Jasmine needs try/catch for failing tests with done
       // @see https://github.com/facebook/jest/issues/1873#issuecomment-258857165
       try {
-        expect(spy).toHaveBeenCalledTimes(3);
+        expect(spy).toHaveBeenCalledTimes(2);
         done();
       } catch (e) {
         done.fail(e);
       }
-    }, 110);
+    }, 11);
   });
 
   test('It should retry on error', () => {
-    const source$ = scheduler.createColdObservable('-1-2-#');
-    const expected = '-1-2----1-(2|)';
-    const polling$ = polling(source$, { interval: 60, exponentialUnit: 10 }, scheduler).take(4);
+    scheduler.run(helpers => {
+      const source$ = of(1);
+      const polling$ = polling(source$, { interval: 2 }).pipe(take(3));
+      const expected = '1-1-(1|)';
 
-    scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
-    scheduler.flush();
+      helpers.expectObservable(polling$).toBe(expected, { 1: 1 });
+    });
   });
 
   test('It should reset delays on not consecutive errors', () => {
-    /**
-     * `.retryWhen` doesn't reset its state after a recover. This cause the
-     * next error to continue the series of increasing delays, like 2 consecutive
-     * errors would do.
-     * @see https://github.com/ReactiveX/rxjs/issues/1413
-     */
-    const source$ = scheduler.createColdObservable('-1-2-#');
-    const expected = '-1-2----1-2----(1|)';
-    const polling$ = polling(source$, { interval: 60, exponentialUnit: 10 }, scheduler).take(5);
+    scheduler.run(helpers => {
+      /**
+       * `.retryWhen` doesn't reset its state after a recover. This cause the
+       * next error to continue the series of increasing delays, like 2 consecutive
+       * errors would do.
+       * @see https://github.com/ReactiveX/rxjs/issues/1413
+       */
+      const source$ = helpers.cold('-1-2-#');
+      const expected = '-1-2-----1-2-----(1|)';
+      const polling$ = polling(source$, { interval: 6, exponentialUnit: 3 }).pipe(take(5));
 
-    scheduler.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
-    scheduler.flush();
+      helpers.expectObservable(polling$).toBe(expected, { 1: '1', 2: '2' });
+    });
   });
 });
 
 describe('Backoff behaviour', function() {
-  let scheduler: Rx.TestScheduler;
+  let scheduler: TestScheduler;
   let timerMock: jest.Mock<any>;
 
   beforeEach(() => {
     Object.defineProperty(document, 'hidden', {
-      value: false,
+      value: false
     });
 
     timerMock = jest.fn(() => {
       // Emit immediately
-      return Rx.Observable.of(null);
+      return of(null);
     });
-    Rx.Observable.timer = timerMock;
+    Object.defineProperty(RxMock, 'timer', {
+      value: timerMock
+    });
 
-    scheduler = new Rx.TestScheduler(assertDeepEqual);
+    scheduler = new TestScheduler(assertDeepEqual);
 
     document.addEventListener = function(eventType, callback) {
       // Noop
@@ -161,11 +170,7 @@ describe('Backoff behaviour', function() {
   });
 
   test('It should throw after all failed attempts', () => {
-    const polling$ = polling(
-      Rx.Observable.throw('Hello'),
-      { interval: 10, attempts: 9 },
-      scheduler
-    );
+    const polling$ = polling(throwError('Hello'), { interval: 10, attempts: 9 });
     polling$.subscribe(
       () => {
         // Noop
@@ -178,16 +183,12 @@ describe('Backoff behaviour', function() {
     expect(timerMock).toHaveBeenCalledTimes(9);
   });
 
-  test('It should retry with exponential backoff if the strategy is \'exponential\'', () => {
-    const polling$ = polling(
-      Rx.Observable.throw('Hello'),
-      {
-        interval: 10,
-        backoffStrategy: 'exponential',
-        exponentialUnit: 10,
-      },
-      scheduler
-    );
+  test("It should retry with exponential backoff if the strategy is 'exponential'", () => {
+    const polling$ = polling(throwError('Hello'), {
+      interval: 10,
+      backoffStrategy: 'exponential',
+      exponentialUnit: 10
+    });
     polling$.subscribe(
       () => {
         // Noop
@@ -197,20 +198,17 @@ describe('Backoff behaviour', function() {
       }
     );
 
-    const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
-    expect(callDelays).toEqual([20, 40, 80, 160, 320, 640, 1280, 2560, 5120]);
+    // First argument of calls is the delay amount
+    const callDelays = timerMock.mock.calls.map(call => call[0]);
+    expect(callDelays).toEqual([10, 20, 40, 80, 160, 320, 640, 1280, 2560]);
   });
 
-  test('It should retry with random backoff if the strategy is \'random\'', () => {
-    const polling$ = polling(
-      Rx.Observable.throw('Hello'),
-      {
-        interval: 10,
-        backoffStrategy: 'random',
-        randomRange: [1000, 10000],
-      },
-      scheduler
-    );
+  test("It should retry with random backoff if the strategy is 'random'", () => {
+    const polling$ = polling(throwError('Hello'), {
+      interval: 10,
+      backoffStrategy: 'random',
+      randomRange: [1000, 10000]
+    });
     polling$.subscribe(
       () => {
         // Noop
@@ -220,23 +218,20 @@ describe('Backoff behaviour', function() {
       }
     );
 
-    const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
+    // First argument of calls is the delay amount
+    const callDelays = timerMock.mock.calls.map(call => call[0]);
     callDelays.forEach(delay => {
       expect(delay).toBeLessThanOrEqual(10000);
       expect(delay).toBeGreaterThanOrEqual(1000);
     });
   });
 
-  test('It should retry with constant backoff if the strategy is \'consecutive\'', () => {
-    const polling$ = polling(
-      Rx.Observable.throw('Hello'),
-      {
-        interval: 10,
-        backoffStrategy: 'consecutive',
-        constantTime: 1000,
-      },
-      scheduler
-    );
+  test("It should retry with constant backoff if the strategy is 'consecutive'", () => {
+    const polling$ = polling(throwError('Hello'), {
+      interval: 10,
+      backoffStrategy: 'consecutive',
+      constantTime: 1000
+    });
     polling$.subscribe(
       () => {
         // Noop
@@ -246,7 +241,8 @@ describe('Backoff behaviour', function() {
       }
     );
 
-    const callDelays = timerMock.mock.calls.map(call => call[0]); // First argument of calls is the delay amount
+    // First argument of calls is the delay amount
+    const callDelays = timerMock.mock.calls.map(call => call[0]);
     callDelays.forEach(delay => expect(delay).toBe(1000));
   });
 });

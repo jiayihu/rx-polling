@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/rx-polling.svg)](https://www.npmjs.com/package/rx-polling) [![travis](https://travis-ci.org/jiayihu/rx-polling.svg?branch=master)](https://travis-ci.org/jiayihu/rx-polling)
 
-**rx-polling** is a tiny (1KB gzipped) [RxJS5](http://github.com/ReactiveX/RxJS)-based library to run polling requests on intervals, with support for:
+**rx-polling** is a tiny (1KB gzipped) [RxJS >= 5.5](http://github.com/ReactiveX/RxJS)-based library to run polling requests on intervals, with support for:
 
 - pause and resume if the browser tab is inactive/active
 - N retry attempts if the request errors
@@ -11,6 +11,8 @@
   2. *random*: it will wait a random time amount between attempts.
   3. *consecutive*: it will wait a constant time amount between attempts.
 - Observables: it accepts any Observable as input and **it returns an Observable**, which means it can be combined with other Observables as any other RxJS stream.
+
+If you need to support rxjs of version <= 5.4 you must install v[0.2.3](https://github.com/jiayihu/rx-polling/releases/tag/v0.2.3) of rx-polling.
 
 ## Demo
 
@@ -27,26 +29,28 @@ npm install rx-polling --save
 Fetch data from the endpoint every 5 seconds.
 
 ```javascript
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/dom/ajax';
-import 'rxjs/add/operator/map';
+import { map } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
 
 import polling from 'rx-polling';
 
 // Example of an Observable which requests some JSON data
-const request$ = Observable.ajax({
-    url: 'https://jsonplaceholder.typicode.com/comments/',
-    crossDomain: true
-  }).map(response => response.response || [])
-  .map(response => response.slice(0, 10)); // Take only first 10 comments
+const request$ = ajax({
+  url: 'https://jsonplaceholder.typicode.com/comments/',
+  crossDomain: true
+}).pipe(
+  map(response => response.response || []),
+  map(response => response.slice(0, 10))
+);
 
-polling(request$, { interval: 5000 }).subscribe((comments) => {
-  console.log(comments);
-}, (error) => {
-  // The Observable will throw if it's not able to recover after N attempts
-  // By default it will attempts 9 times with exponential delay between each other.
-  console.error(error);
-});
+polling(request$, { interval: 5000 })
+  .subscribe((comments) => {
+    console.log(comments);
+  }, (error) => {
+    // The Observable will throw if it's not able to recover after N attempts
+    // By default it will attempts 9 times with exponential delay between each other.
+    console.error(error);
+  });
 ```
 
 ### Stop polling
@@ -55,15 +59,18 @@ Since `rx-polling` returns an Observable, you can just `.unsubscribe` from it to
 
 ```javascript
 // As previous example but without imports
-const request$ = Observable.ajax({
-    url: 'https://jsonplaceholder.typicode.com/comments/',
-    crossDomain: true
-  }).map(response => response.response || [])
-  .map(response => response.slice(0, 10)); // Take only first 10 comments
+const request$ = ajax({
+  url: 'https://jsonplaceholder.typicode.com/comments/',
+  crossDomain: true
+}).pipe(
+  map(response => response.response || []),
+  map(response => response.slice(0, 10))
+);
 
-let subscription = polling(request$, { interval: 5000 }).subscribe((comments) => {
-  console.log(comments);
-});
+let subscription = polling(request$, { interval: 5000 })
+  .subscribe((comments) => {
+    console.log(comments);
+  });
 
 window.setTimeout(() => {
   // Close the polling
@@ -76,12 +83,14 @@ window.setTimeout(() => {
 You can use the returned `Observable` as with any other stream. The sky is the only limit.
 
 ```javascript
-// `this.http.get` returns an Observable, like Angular Http class
+// `this.http.get` returns an Observable, like Angular HttpClient class
 const request$ = this.http.get('https://jsonplaceholder.typicode.com/comments/');
 
 let subscription = polling(request$, { interval: 5000 })
-  // Accept only cool comments from the polling
-  .filter(comments => comments.filter(comment => comment.isCool))
+  .pipe(
+    // Accept only cool comments from the polling
+    filter(comments => comments.filter(comment => comment.isCool))
+  )
   .subscribe((comments) => {
     console.log(comments);
   });
