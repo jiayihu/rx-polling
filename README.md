@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/rx-polling.svg)](https://www.npmjs.com/package/rx-polling) [![travis](https://travis-ci.org/jiayihu/rx-polling.svg?branch=master)](https://travis-ci.org/jiayihu/rx-polling)
 
-**rx-polling** is a tiny (1KB gzipped) [RxJS >= 5.5](http://github.com/ReactiveX/RxJS)-based library to run polling requests on intervals, with support for:
+**rx-polling** is a tiny (1KB gzipped) [RxJSv6](http://github.com/ReactiveX/RxJS)-based library to run polling requests on intervals, with support for:
 
 - pause and resume if the browser tab is inactive/active
 - N retry attempts if the request errors
@@ -12,7 +12,7 @@
   3. *consecutive*: it will wait a constant time amount between attempts.
 - Observables: it accepts any Observable as input and **it returns an Observable**, which means it can be combined with other Observables as any other RxJS stream.
 
-If you need to support rxjs of version <= 5.4 you must install v[0.2.3](https://github.com/jiayihu/rx-polling/releases/tag/v0.2.3) of rx-polling.
+* If you need to support rxjs of version <= 5.4 you must install v[0.2.3](https://github.com/jiayihu/rx-polling/releases/tag/v0.2.3) of rx-polling.
 
 ## Demo
 
