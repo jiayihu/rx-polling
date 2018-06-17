@@ -107,12 +107,12 @@ describe('Basic behaviour', function() {
       // Jasmine needs try/catch for failing tests with done
       // @see https://github.com/facebook/jest/issues/1873#issuecomment-258857165
       try {
-        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenCalledTimes(3);
         done();
       } catch (e) {
         done.fail(e);
       }
-    }, 11);
+    }, 14);
   });
 
   test('It should retry on error', () => {
