@@ -118,7 +118,7 @@ describe('Basic behaviour', function() {
   test('It should retry on error', () => {
     scheduler.run(helpers => {
       const source$ = scheduler.createColdObservable('-1-2-#');
-      const expected = '-1-2-----1-(2|)';
+      const expected = '-1-2- 3ms -1-(2|)';
       const polling$ = polling(source$, { interval: 6, exponentialUnit: 3 }).pipe(take(4));
 
       scheduler.expectObservable(polling$).toBe(expected);
@@ -134,7 +134,7 @@ describe('Basic behaviour', function() {
        * @see https://github.com/ReactiveX/rxjs/issues/1413
        */
       const source$ = helpers.cold('-1-2-#');
-      const expected = '-1-2-----1-2-----(1|)';
+      const expected = '-1-2- 3ms -1-2- 3ms -(1|)';
       const polling$ = polling(source$, { interval: 6, exponentialUnit: 3 }).pipe(take(5));
 
       helpers.expectObservable(polling$).toBe(expected);
