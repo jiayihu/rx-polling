@@ -1,5 +1,5 @@
-import { Observable, of, timer, throwError, Observer } from 'rxjs';
-import { take, map } from 'rxjs/operators';
+import { Observable, of, timer, interval, throwError, Observer } from 'rxjs';
+import { take, map, delay } from 'rxjs/operators';
 import { TestScheduler } from 'rxjs/testing';
 import * as RxMock from 'rxjs';
 import polling from '../index';
@@ -89,11 +89,12 @@ describe('Basic behaviour', function() {
     });
   });
 
-  test('It should stop polling on unsubscription', done => {
-    const spy = jest.fn();
-    const source$ = Observable.create(observer => {
-      spy();
+  test('It should stop polling on unsubscription', () => {
+    const ops = [];
+    const source$ = Observable.create((observer: Observer<number>) => {
+      ops.push('next');
       observer.next(1);
+      observer.complete();
     });
     const polling$ = polling(source$, { interval: 5 });
 
@@ -101,18 +102,13 @@ describe('Basic behaviour', function() {
       // Noop
     });
 
-    setTimeout(() => {
-      subscription.unsubscribe();
-
-      // Jasmine needs try/catch for failing tests with done
-      // @see https://github.com/facebook/jest/issues/1873#issuecomment-258857165
-      try {
-        expect(spy.mock.calls.length).toBeGreaterThanOrEqual(2);
-        done();
-      } catch (e) {
-        done.fail(e);
-      }
-    }, 14);
+    return interval(9)
+      .pipe(take(1))
+      .toPromise()
+      .then(() => {
+        subscription.unsubscribe();
+        expect(ops.length).toBe(2); // 1 first request then 1 repeat
+      });
   });
 
   test('It should retry on error', () => {
@@ -121,7 +117,17 @@ describe('Basic behaviour', function() {
       const expected = '-1-2- 3ms -1-(2|)';
       const polling$ = polling(source$, { interval: 6, exponentialUnit: 3 }).pipe(take(4));
 
-      scheduler.expectObservable(polling$).toBe(expected);
+      helpers.expectObservable(polling$).toBe(expected);
+    });
+  });
+
+  test('It should not repoll if latency > interval', () => {
+    scheduler.run(helpers => {
+      const source$ = of(1).pipe(delay(10));
+      const expected = '10ms 1 14ms (1|)';
+      const polling$ = polling(source$, { interval: 5 }).pipe(take(2));
+
+      helpers.expectObservable(polling$).toBe(expected, { 1: 1 });
     });
   });
 
@@ -143,7 +149,6 @@ describe('Basic behaviour', function() {
 });
 
 describe('Backoff behaviour', function() {
-  let scheduler: TestScheduler;
   let timerMock: jest.Mock<any>;
 
   beforeEach(() => {
@@ -158,8 +163,6 @@ describe('Backoff behaviour', function() {
     Object.defineProperty(RxMock, 'timer', {
       value: timerMock
     });
-
-    scheduler = new TestScheduler(assertDeepEqual);
 
     document.addEventListener = function(eventType, callback) {
       // Noop

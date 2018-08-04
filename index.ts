@@ -1,6 +1,6 @@
-import { Observable, Observer, Scheduler, fromEvent, interval, timer, empty } from 'rxjs';
+import { Observable, fromEvent, interval, timer, empty, concat } from 'rxjs';
 
-import { tap, retryWhen, scan, startWith, switchMap } from 'rxjs/operators';
+import { tap, retryWhen, scan, startWith, switchMap, take, repeat } from 'rxjs/operators';
 
 export interface IOptions {
   /**
@@ -72,15 +72,22 @@ export default function polling<T>(request$: Observable<T>, userOptions: IOption
     startWith(null),
     switchMap(() => {
       if (isPageActive()) {
-        return interval(options.interval).pipe(
-          startWith(null), // Immediately run the first call
+        const firstRequest$ = request$;
+        const polling$ = interval(options.interval).pipe(
+          take(1),
           switchMap(() => request$),
+          repeat()
+        );
+
+        return concat(firstRequest$, polling$).pipe(
           retryWhen(errors$ => {
             return errors$.pipe(
-              scan(({ errorCount, error }, err) => ({ errorCount: errorCount + 1, error: err }), {
-                errorCount: 0,
-                error: null
-              }),
+              scan(
+                ({ errorCount, error }, err) => {
+                  return { errorCount: errorCount + 1, error: err };
+                },
+                { errorCount: 0, error: null }
+              ),
               switchMap(({ errorCount, error }) => {
                 allErrorsCount = errorCount;
                 const consecutiveErrorsCount = allErrorsCount - lastRecoverCount;

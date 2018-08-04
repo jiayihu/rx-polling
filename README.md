@@ -34,7 +34,7 @@ import { ajax } from 'rxjs/ajax';
 
 import polling from 'rx-polling';
 
-// Example of an Observable which requests some JSON data
+// Example of an Observable which requests some JSON data and completes
 const request$ = ajax({
   url: 'https://jsonplaceholder.typicode.com/comments/',
   crossDomain: true
@@ -105,8 +105,11 @@ import polling from 'rx-polling';
 
 ...
 
-// Actually any Observable is okay, even if it does not make network requests
-const request$ = this.http.get('someResource');
+/**
+ * Actually any Observable is okay, even if it does not make network requests,
+ * but it must complete at some point otherwise it will never be repeated.
+ */
+const request$ = this.http.get('someResource').pipe(take(1));
 const options = { interval: 5000 };
 
 polling(request$, options)
@@ -120,7 +123,7 @@ polling(request$, options)
 
 Returns an `Observable` which:
 
-- *emits* every `interval` milli-seconds using the value from `request$` Observable
+- *emits* each value emitted by `request$` Observable, resubscribed every `interval` milli-seconds
 - *errors* if `request$` throws AND if after N attempts it still fails. If any of the attempts succeeds then the polling is recovered and no error is thrown
 - *completes* Never. Be sure to `.unsubscribe()` the Observable when you're not anymore interested in the polling.
 
@@ -195,6 +198,6 @@ Contributions are welcome. New commits/Pull Requests must:
 
 **@NOTE**: testing RxJS is currently really hard. This repo uses [Jest](http://facebook.github.io/jest/) contains some custom utilities to improve testing and error reports. The following console output is not standard and totally custom, so be aware of possible issues.
 
-Nevertheless marbles are awesome!
+Nevertheless marbles are awesome! You can read more about it in [Testing Observables in RxJS6](https://blog.jiayihu.net/testing-observables-in-rxjs6/)
 
 ![Testing](./assets/testing.png)

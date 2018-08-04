@@ -50,15 +50,15 @@ export function diffTestMessages(actual: TestMessage[], expected: TestMessage[])
 
 /**
  * Returns an Observable, very similar to `Observable.of()` but it errors on the
- * third time.
+ * given time.
  */
-export function getErrorObservable(): Observable<number> {
+export function getErrorObservable(time: number): Observable<number> {
   let counter = 0;
 
   return Observable.create((observer: Observer<number>) => {
     counter += 1;
 
-    if (counter < 3) {
+    if (counter < time) {
       observer.next(counter);
       observer.complete();
       return;
