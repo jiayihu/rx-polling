@@ -15,7 +15,10 @@
     "prepare": "npm run clean && npm run build",
     "prepush": "npm run lint && npm test"
   },
-  "repository": "https://github.com/jiayihu/rx-polling",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hmcts/rx-polling.git"
+  },
   "keywords": [
     "rxjs",
     "polling",
