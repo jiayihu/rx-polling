@@ -1,5 +1,5 @@
 {
-  "name": "rx-polling",
+  "name": "@hmcts/rx-polling",
   "version": "1.0.1",
   "description": "Polling library done with RxJS",
   "main": "lib/index.js",
@@ -15,7 +15,13 @@
     "prepare": "npm run clean && npm run build",
     "prepush": "npm run lint && npm test"
   },
-  "repository": "https://github.com/jiayihu/rx-polling",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hmcts/rx-polling"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "rxjs",
     "polling",
@@ -24,7 +30,9 @@
   ],
   "author": "Jiayi Hu <jiayi.ghu@gmail.com>",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "jest-cli": "^25.1.0"
+  },
   "devDependencies": {
     "@types/chalk": "^0.4.31",
     "@types/jest": "^19.2.2",
