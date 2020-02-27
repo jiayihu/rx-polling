@@ -55,7 +55,7 @@ describe('Basic behaviour', function() {
     });
   });
 
-  test('It should not poll if the tab is inactive', () => {
+  test('It should not poll if the tab is inactive and background polling is default', () => {
     setPageActive(false);
 
     scheduler.run(helpers => {
@@ -64,6 +64,30 @@ describe('Basic behaviour', function() {
       const expected = '----';
 
       helpers.expectObservable(polling$).toBe(expected);
+    });
+  });
+
+  test('It should not poll if the tab is inactive and background polling is false', () => {
+    setPageActive(false);
+
+    scheduler.run(helpers => {
+      const source$ = of('Hello');
+      const polling$ = polling(source$, { interval: 2, backgroundPolling: false }).pipe(take(3));
+      const expected = '----';
+
+      helpers.expectObservable(polling$).toBe(expected);
+    });
+  });
+
+  test('It should poll if the tab is inactive and background polling is true', () => {
+    setPageActive(false);
+
+    scheduler.run(helpers => {
+      const source$ = of(1);
+      const polling$ = polling(source$, { interval: 2, backgroundPolling: true }).pipe(take(3));
+      const expected = '1-1-(1|)';
+
+      helpers.expectObservable(polling$).toBe(expected, { 1: 1 });
     });
   });
 
