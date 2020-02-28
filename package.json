@@ -12,7 +12,7 @@
     "clean": "rimraf lib",
     "lint": "tslint \"./index.ts\"",
     "test": "jest",
-    "prepare": "npm run clean && npm run build",
+    "prepare": "echo 'done'",
     "prepush": "npm run lint && npm test"
   },
   "repository": {
