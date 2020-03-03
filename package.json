@@ -1,6 +1,6 @@
 {
-  "name": "rx-polling",
-  "version": "1.0.1",
+  "name": "@hmcts/rx-polling",
+  "version": "1.2",
   "description": "Polling library done with RxJS",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
