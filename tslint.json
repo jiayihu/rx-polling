@@ -1,5 +1,5 @@
 {
-  "extends": ["tslint:recommended"],
+  "extends": ["tslint:recommended", "rxjs-tslint"],
   "rules": {
     "arrow-parens": false,
     "curly": false,

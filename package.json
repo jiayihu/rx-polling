@@ -1,6 +1,6 @@
 {
-  "name": "@hmcts/rx-polling",
-  "version": "1.2.0",
+  "name": "rx-polling",
+  "version": "1.0.1",
   "description": "Polling library done with RxJS",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -14,13 +14,7 @@
     "test": "jest",
     "prepush": "npm run lint && npm test"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hmcts/rx-polling.git"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "repository": "https://github.com/jiayihu/rx-polling",
   "keywords": [
     "rxjs",
     "polling",
@@ -40,6 +34,7 @@
     "lodash": "^4.17.4",
     "rimraf": "^2.6.1",
     "rxjs": "^6.2.1",
+    "rxjs-tslint": "^0.1.4",
     "ts-jest": "^19.0.8",
     "tslint": "^5.0.0",
     "typescript": "^2.9.2"
