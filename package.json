@@ -12,6 +12,7 @@
     "clean": "rimraf lib",
     "lint": "tslint \"./index.ts\"",
     "test": "jest",
+    "prepare": "npm run clean && npm run build",
     "prepush": "npm run lint && npm test"
   },
   "repository": "https://github.com/jiayihu/rx-polling",
