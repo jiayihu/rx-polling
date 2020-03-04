@@ -172,6 +172,11 @@ export interface IOptions {
    * Constant time to delay error retries if 'consecutive' strategy is used
    */
   constantTime?: number;
+
+  /**
+   * Flag to enable background polling, ie polling even when the browser is inactive.
+   */
+  backgroundPolling?: boolean;
 }
 
 const defaultOptions: IOptions = {
@@ -179,6 +184,7 @@ const defaultOptions: IOptions = {
   backoffStrategy: 'exponential',
   exponentialUnit: 1000, // 1 second
   randomRange: [1000, 10000],
+  backgroundPolling: false
 };
 ```
 

@@ -42,13 +42,19 @@ export interface IOptions {
    * Constant time to delay error retries if 'consecutive' strategy is used
    */
   constantTime?: number;
+
+  /**
+   * Flag to enable background polling, ie polling even when the browser is inactive.
+   */
+  backgroundPolling?: boolean;
 }
 
 const defaultOptions: Partial<IOptions> = {
   attempts: 9,
   backoffStrategy: 'exponential',
   exponentialUnit: 1000, // 1 second
-  randomRange: [1000, 10000]
+  randomRange: [1000, 10000],
+  backgroundPolling: false
 };
 
 /**
@@ -71,7 +77,7 @@ export default function polling<T>(request$: Observable<T>, userOptions: IOption
   return fromEvent(document, 'visibilitychange').pipe(
     startWith(null),
     switchMap(() => {
-      if (isPageActive()) {
+      if (isPageActive() || options.backgroundPolling) {
         const firstRequest$ = request$;
         const polling$ = interval(options.interval).pipe(
           take(1),

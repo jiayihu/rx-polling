@@ -34,6 +34,10 @@ export interface IOptions {
      * Constant time to delay error retries if 'consecutive' strategy is used
      */
     constantTime?: number;
+    /**
+     * Flag to enable background polling, ie polling even when the browser is inactive.
+     */
+    backgroundPolling?: boolean;
 }
 /**
  * Run a polling stream for the source$
